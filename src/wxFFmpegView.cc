@@ -9,6 +9,7 @@
 
 #include "glmanager.h"
 #include "movie.h"
+#include <atomic>
 
 class wxFFmpegInnerView : public wxGLCanvas {
 public:

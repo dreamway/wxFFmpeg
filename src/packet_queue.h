@@ -5,6 +5,8 @@
 #include <deque>
 #include <thread>
 #include <cassert>
+#include <condition_variable>
+#include <mutex>
 
 template <size_t SizeLimit> class PacketQueue {
 public:

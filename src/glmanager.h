@@ -6,6 +6,7 @@ class GLManager {
 public:
     GLManager();
     bool ok();
+    void clear();
     void setViewport(int x, int y, int width, int height);
     void draw(int width, int height, uint8_t **data, int *linesize);
 

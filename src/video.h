@@ -5,6 +5,7 @@
 #include "packet_queue.h"
 
 #include <array>
+#include <atomic>
 
 #define VIDEO_PICTURE_QUEUE_SIZE 24
 

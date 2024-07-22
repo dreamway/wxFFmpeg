@@ -106,6 +106,11 @@ bool GLManager::ok() {
     return true;
 }
 
+
+void GLManager::clear() {
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
 void GLManager::setViewport(int x, int y, int width, int height) {
     viewWidth = width;
     viewHeight = height;

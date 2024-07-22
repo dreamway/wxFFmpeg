@@ -19,9 +19,9 @@ find_package(FFmpeg
 add_subdirectory(src)
 add_subdirectory(example)
 
-execute_process(COMMAND make
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/dep/glew/auto
-    )
-add_subdirectory(dep/glew/build/cmake)
+#execute_process(COMMAND make
+#    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/dep/glew/auto
+#    )
+#add_subdirectory(dep/glew/build/cmake)
 
 add_subdirectory(dep/openal-soft)

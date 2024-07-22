@@ -2,6 +2,7 @@
 #include "movie.h"
 
 #include <iostream>
+#include <algorithm>
 
 using std::chrono::duration_cast;
 
