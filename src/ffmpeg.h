@@ -5,6 +5,7 @@ extern "C" {
 #include "libavutil/time.h"
 #include "libswresample/swresample.h"
 #include "libswscale/swscale.h"
+#include "libavcodec/avcodec.h"
 }
 
 #include "chronons.h"

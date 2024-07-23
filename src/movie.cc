@@ -54,7 +54,7 @@ int Movie::streamComponentOpen(unsigned int stream_index) {
         return -1;
     }
 
-    AVCodec *codec{avcodec_find_decoder(avctx->codec_id)};
+    const AVCodec *codec = avcodec_find_decoder(avctx->codec_id);
     if (!codec || avcodec_open2(avctx.get(), codec, nullptr) < 0) {
         std::cerr << "Unsupported codec: " << avcodec_get_name(avctx->codec_id)
                   << std::endl;
