@@ -177,3 +177,78 @@ nanoseconds Movie::getClock() {
     assert(0);
     return nanoseconds::min();
 }
+
+void Movie::play() {
+
+}
+    
+void Movie::pause() {
+
+}
+
+bool Movie::isPlaying() const {
+
+}
+
+void Movie::stop() {
+
+}
+    
+bool Movie::isStopped() const {
+    //TODO
+    return false;
+}
+
+bool Movie::isPaused() const {
+    //TODO
+    return false;
+}
+
+bool Movie::isFinished() const {
+    //TODO
+    return false;
+}
+
+bool Movie::isOpen() const {
+    return fmtctx_ != nullptr;
+}
+
+int Movie::getPosition() const {
+    //TODO
+    return 0;
+}
+
+bool Movie::seek(int64_t timestamp) {
+    //TODO
+    return false;
+}
+
+int Movie::getDuration() const {
+    //TODO
+    return 0;
+}
+
+
+bool Movie::setVolume(double volume) {
+    //TODO
+    return false;
+}
+    
+void Movie::setPosition(int position) {
+//TODO
+}
+    
+double Movie::getVolume() const {
+    //TODO  
+    return .0f;
+}
+
+bool Movie::setPlaybackRate(double rate) {
+    //TODO
+    return false;
+}
+
+double Movie::getPlaybackRate() const {
+    //TODO
+    return 1.0f;
+}

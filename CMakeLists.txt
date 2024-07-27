@@ -28,7 +28,9 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif()
 
 add_subdirectory(src)
-add_subdirectory(example)
+add_subdirectory(mediaplayer)
+#add_subdirectory(wzMediaPlayer)
+#add_subdirectory(example)
 
 #execute_process(COMMAND make
 #    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/dep/glew/auto
