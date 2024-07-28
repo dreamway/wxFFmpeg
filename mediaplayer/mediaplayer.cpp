@@ -8,9 +8,12 @@
 // ----------------------------------------------------------------------------
 // Headers
 // ----------------------------------------------------------------------------
-
+#include "wx/dir.h"
+#include "wx/datetime.h"
+#include "wx/file.h"
 #include "wx/mediactrl.h"   // for wxMediaCtrl
 //#include "wzMediaCtrl.h"
+#include "wx/log.h"
 #include "wx/filedlg.h"     // for opening files from OpenFile
 #include "wx/slider.h"      // for a slider for seeking within media
 #include "wx/sizer.h"       // for positioning controls/wxBoxSizer
@@ -25,6 +28,8 @@
 #include "wx/vector.h"
 #include "wx/stattext.h"
 #include "wxFFmpegView.h"
+#include <fstream>
+using namespace std;
 
 #ifndef wxHAS_IMAGES_IN_RESOURCES
     #include "../sample.xpm"
@@ -90,10 +95,6 @@ enum
 class wxMediaPlayerApp : public wxApp
 {
 public:
-#ifdef __WXMAC__
-    virtual void MacOpenFiles(const wxArrayString & fileNames ) override;
-#endif
-
 #if wxUSE_CMDLINE_PARSER
     virtual void OnInitCmdLine(wxCmdLineParser& parser) override;
     virtual bool OnCmdLineParsed(wxCmdLineParser& parser) override;
@@ -103,9 +104,12 @@ public:
 #endif // wxUSE_CMDLINE_PARSER
 
     virtual bool OnInit() override;
+    virtual void CleanUp() override;
 
 protected:
     class wxMediaPlayerFrame* m_frame;
+private:
+    std::ofstream logStream;
 };
 
 // ----------------------------------------------------------------------------
@@ -402,31 +406,43 @@ bool wxMediaPlayerApp::OnCmdLineParsed(wxCmdLineParser& parser)
 // 3) return true specifying that we want execution to continue past OnInit
 // ----------------------------------------------------------------------------
 bool wxMediaPlayerApp::OnInit()
-{
+{        
+    if(!wxDir::Exists("./logs")) {
+        wxDir::Make("./logs");
+    }
+
+    wxString timeString = wxDateTime::Now().Format("%Y%m%d%H%M%S");
+    wxString logFileName = "./logs/wzMediaPlayerLog_" + timeString + ".log";
+    logStream.open(logFileName.ToStdString(), std::ofstream::out);
+    if(logStream.is_open()) {
+        wxLogStream *logger = new wxLogStream(&logStream);
+        wxLog::SetActiveTarget(logger);
+        wxLog::SetVerbose(true);
+        wxLog::SetLogLevel(wxLOG_Debug);        
+    } else {
+        wxLog::SetActiveTarget(new wxLogStderr);
+    }
+    wxLogInfo("Start wzMediaPlayer at:"+timeString);
+
     if ( !wxApp::OnInit() )
         return false;
 
-    // SetAppName() lets wxConfig and others know where to write
-    SetAppName("wxMediaPlayer");
+    SetAppName("wzMediaPlayer");
 
     wxMediaPlayerFrame *frame =
-        new wxMediaPlayerFrame("MediaPlayer wxWidgets Sample");
+        new wxMediaPlayerFrame("wz3DMediaPlayer");
     frame->Show(true);
-
-#if wxUSE_CMDLINE_PARSER
-    if ( !m_params.empty() )
-    {
-        for ( size_t n = 0; n < m_params.size(); n++ )
-            frame->AddToPlayList(m_params[n]);
-
-        wxCommandEvent theEvent(wxEVT_MENU, wxID_NEXT);
-        frame->AddPendingEvent(theEvent);
-    }
-#endif // wxUSE_CMDLINE_PARSER
 
     return true;
 }
 
+void wxMediaPlayerApp::CleanUp()
+{        
+    if(logStream.is_open()) {
+        logStream.close();
+    }
+    wxApp::CleanUp();
+}
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //
