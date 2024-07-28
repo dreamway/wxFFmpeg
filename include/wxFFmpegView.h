@@ -1,6 +1,8 @@
 #pragma once
 
 #include <wx/panel.h>
+#include "wx/mediactrl.h"
+
 
 class wxFFmpegInnerView;
 class wxFFmpegView : public wxPanel {
@@ -13,30 +15,32 @@ public:
                  const wxString &name = _T("wxFFmpegView"));
     ~wxFFmpegView();
 
-    void open(std::string filename);
-    void close();
-    void play();
-    void pause();
-    void stop();
-    void seek(int pos);
-    bool isPlaying();
-    bool isPaused();
-    bool isStopped();
-    bool isOpen();
-    int getPosition();
-    int getDuration();
-    wxSize getSize();
-    void setSize(int width, int height);
-    void setSize(wxSize size);
-    bool isFullScreen();
-    void setFullScreen(bool enable = true);
-    bool setVolume(double volume);
-    double getVolume();
-    void setPosition(int pos);
-    bool getState(int& state);
-    double getPlaybackRate();
-    bool setPlaybackRate(double rate);
-    void setFPS(float fps);
+    void Open(std::string filename);
+    bool Load(wxURI path);
+    void Close();
+    bool Play();
+    bool Pause();
+    bool Stop();
+    int Seek(int pos);
+    bool IsPlaying();
+    bool IsPaused();
+    bool IsStopped();
+    bool IsOpened();
+    int GetPosition();
+    int GetDuration();
+    bool IsFullScreen();
+    void SetFullScreen(bool enable = true);
+    bool SetVolume(double volume);
+    double GetVolume();
+    void SetPosition(int pos);
+    bool GetState(int& state);
+    wxMediaState GetState();
+    double GetPlaybackRate();
+    bool SetPlaybackRate(double rate);
+    void SetFPS(float fps);
+    wxLongLong Length();
+    wxLongLong Tell();
+    int GetValue();
 
     void OnSize(wxSizeEvent& event);
 private:

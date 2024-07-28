@@ -129,11 +129,16 @@ void GLManager::draw(int width, int height, uint8_t **data, int *linesize) {
         texHeight = height;
         changed = true;
     }
-    std::cout<<"GLManager::draw frameWidth:"<<width<<"x"<<height<<", textureSize:"<<texWidth<<"x"<<texHeight<<std::endl;
 
     float tr = (float)texWidth / texHeight;
     float vr = (float)viewWidth / viewHeight;
     float r = tr / vr;
+    static int drawCounter = 0;
+    drawCounter++;
+    if(drawCounter % 10 == 0) {
+        std::cout<<"GLManager::draw frameWidth:"<<width<<"x"<<height<<", textureSize:"<<texWidth<<"x"<<texHeight<<std::endl;
+        std::cout<<"GLManager::draw tr:"<<tr<<", vr:"<<vr<<", r:"<<r<<std::endl;
+    }
 
     if (r != ratio) {
         ratio = r;

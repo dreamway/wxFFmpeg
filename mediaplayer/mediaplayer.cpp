@@ -10,7 +10,7 @@
 // ----------------------------------------------------------------------------
 
 #include "wx/mediactrl.h"   // for wxMediaCtrl
-#include "wzMediaCtrl.h"
+//#include "wzMediaCtrl.h"
 #include "wx/filedlg.h"     // for opening files from OpenFile
 #include "wx/slider.h"      // for a slider for seeking within media
 #include "wx/sizer.h"       // for positioning controls/wxBoxSizer
@@ -24,7 +24,7 @@
 #include "wx/config.h"      // for native wxConfig
 #include "wx/vector.h"
 #include "wx/stattext.h"
-
+#include "wxFFmpegView.h"
 
 #ifndef wxHAS_IMAGES_IN_RESOURCES
     #include "../sample.xpm"
@@ -206,7 +206,8 @@ public:
     int      m_nLastFileId;     // List ID of played file in listctrl
     wxString m_szFile;          // Name of currently playing file/location
 
-    wzMediaCtrl* m_mediactrl;   // Our media control
+    //wzMediaCtrl* m_mediactrl;   // Our media control
+    wxFFmpegView* m_ffmpegView;   // Our media control
     class wxMediaPlayerListCtrl* m_playlist;  // Our playlist
     wxSlider* m_slider;         // The slider below our media control
     wxSlider* m_pbSlider;       // Lower-left slider for adjusting speed
@@ -744,23 +745,23 @@ void wxMediaPlayerFrame::OnLoop(wxCommandEvent& WXUNUSED(event))
 // ----------------------------------------------------------------------------
 void wxMediaPlayerFrame::OnShowInterface(wxCommandEvent& event)
 {
-    wxMediaPlayerNotebookPage* currentpage =
-        ((wxMediaPlayerNotebookPage*)m_notebook->GetCurrentPage());
+    // wxMediaPlayerNotebookPage* currentpage =
+    //     ((wxMediaPlayerNotebookPage*)m_notebook->GetCurrentPage());
 
-    if( !currentpage->m_mediactrl->ShowPlayerControls(event.IsChecked() ?
-            wxMEDIACTRLPLAYERCONTROLS_DEFAULT :
-             wxMEDIACTRLPLAYERCONTROLS_NONE)    )
-    {
-        // error - uncheck and warn user
-        wxMenuItem* pSIItem = GetMenuBar()->FindItem(wxID_SHOWINTERFACE);
-        wxASSERT(pSIItem);
-        pSIItem->Check(!event.IsChecked());
+    // if( !currentpage->m_mediactrl->ShowPlayerControls(event.IsChecked() ?
+    //         wxMEDIACTRLPLAYERCONTROLS_DEFAULT :
+    //          wxMEDIACTRLPLAYERCONTROLS_NONE)    )
+    // {
+    //     // error - uncheck and warn user
+    //     wxMenuItem* pSIItem = GetMenuBar()->FindItem(wxID_SHOWINTERFACE);
+    //     wxASSERT(pSIItem);
+    //     pSIItem->Check(!event.IsChecked());
 
-        if(event.IsChecked())
-            wxMessageBox("Could not show player controls");
-        else
-            wxMessageBox("Could not hide player controls");
-    }
+    //     if(event.IsChecked())
+    //         wxMessageBox("Could not show player controls");
+    //     else
+    //         wxMessageBox("Could not hide player controls");
+    // }
 }
 
 // ----------------------------------------------------------------------------
@@ -869,14 +870,14 @@ void wxMediaPlayerFrame::DoPlayFile(const wxString& path)
             currentpage->m_szFile.compare(path) == 0)
       )
     {
-        if(currentpage->m_mediactrl->GetState() == wxMEDIASTATE_PLAYING)
+        if(currentpage->m_ffmpegView->GetState() == wxMEDIASTATE_PLAYING)
         {
-            if( !currentpage->m_mediactrl->Pause() )
+            if( !currentpage->m_ffmpegView->Pause() )
                 wxMessageBox("Couldn't pause movie!");
         }
         else
         {
-            if( !currentpage->m_mediactrl->Play() )
+            if( !currentpage->m_ffmpegView->Play() )
                 wxMessageBox("Couldn't play movie!");
         }
     }
@@ -894,7 +895,7 @@ void wxMediaPlayerFrame::DoPlayFile(const wxString& path)
         wxURI uripath(path);
         if( uripath.IsReference() )
         {
-            if( !currentpage->m_mediactrl->Load(path) )
+            if( !currentpage->m_ffmpegView->Load(path) )
             {
                 wxMessageBox("Couldn't load file!");
                 currentpage->m_playlist->SetItem(nNewId, 0, "E");
@@ -906,7 +907,7 @@ void wxMediaPlayerFrame::DoPlayFile(const wxString& path)
         }
         else
         {
-            if( !currentpage->m_mediactrl->Load(uripath) )
+            if( !currentpage->m_ffmpegView->Load(uripath) )
             {
                 wxMessageBox("Couldn't load URL!");
                 currentpage->m_playlist->SetItem(nNewId, 0, "E");
@@ -937,7 +938,7 @@ void wxMediaPlayerFrame::OnMediaLoaded(wxMediaEvent& WXUNUSED(evt))
     wxMediaPlayerNotebookPage* currentpage =
         (wxMediaPlayerNotebookPage*) m_notebook->GetCurrentPage();
 
-    if( !currentpage->m_mediactrl->Play() )
+    if( !currentpage->m_ffmpegView->Play() )
     {
             wxMessageBox("Couldn't play movie!");
         currentpage->m_playlist->SetItem(currentpage->m_nLastFileId, 0, "E");
@@ -1134,7 +1135,7 @@ void wxMediaPlayerFrame::OnStop(wxCommandEvent& WXUNUSED(evt))
     wxMediaPlayerNotebookPage* currentpage =
         (wxMediaPlayerNotebookPage*) m_notebook->GetCurrentPage();
 
-    if( !currentpage->m_mediactrl->Stop() )
+    if( !currentpage->m_ffmpegView->Stop() )
         wxMessageBox("Couldn't stop movie!");
     else
         currentpage->m_playlist->SetItem(
@@ -1278,8 +1279,8 @@ void wxMediaPlayerFrame::OnVolumeDown(wxCommandEvent& WXUNUSED(event))
     wxMediaPlayerNotebookPage* currentpage =
         (wxMediaPlayerNotebookPage*) m_notebook->GetCurrentPage();
 
-    double dVolume = currentpage->m_mediactrl->GetVolume();
-    currentpage->m_mediactrl->SetVolume(dVolume < 0.05 ? 0.0 : dVolume - .05);
+    double dVolume = currentpage->m_ffmpegView->GetVolume();
+    currentpage->m_ffmpegView->SetVolume(dVolume < 0.05 ? 0.0 : dVolume - .05);
 }
 
 // ----------------------------------------------------------------------------
@@ -1292,8 +1293,8 @@ void wxMediaPlayerFrame::OnVolumeUp(wxCommandEvent& WXUNUSED(event))
     wxMediaPlayerNotebookPage* currentpage =
         (wxMediaPlayerNotebookPage*) m_notebook->GetCurrentPage();
 
-    double dVolume = currentpage->m_mediactrl->GetVolume();
-    currentpage->m_mediactrl->SetVolume(dVolume > 0.95 ? 1.0 : dVolume + .05);
+    double dVolume = currentpage->m_ffmpegView->GetVolume();
+    currentpage->m_ffmpegView->SetVolume(dVolume > 0.95 ? 1.0 : dVolume + .05);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1317,10 +1318,11 @@ void wxMediaPlayerTimer::Notify()
 {
     wxMediaPlayerNotebookPage* currentpage =
         (wxMediaPlayerNotebookPage*) m_frame->m_notebook->GetCurrentPage();
-    wzMediaCtrl* currentMediaCtrl = currentpage->m_mediactrl;
+    //wzMediaCtrl* currentMediaCtrl = currentpage->m_mediactrl;
+    wxFFmpegView* ffmpegView = currentpage->m_ffmpegView;
 
     // Number of minutes/seconds total
-    wxLongLong llLength = currentpage->m_mediactrl->Length();
+    wxLongLong llLength = currentpage->m_ffmpegView->Length();
     int nMinutes = (int) (llLength / 60000).GetValue();
     int nSeconds = (int) ((llLength % 60000)/1000).GetValue();
 
@@ -1330,7 +1332,7 @@ void wxMediaPlayerTimer::Notify()
 
 
     // Number of minutes/seconds total
-    wxLongLong llTell = currentpage->m_mediactrl->Tell();
+    wxLongLong llTell = currentpage->m_ffmpegView->Tell();
     nMinutes = (int) (llTell / 60000).GetValue();
     nSeconds = (int) ((llTell % 60000)/1000).GetValue();
 
@@ -1355,6 +1357,7 @@ void wxMediaPlayerTimer::Notify()
 
 
     // Update the gauge with the download progress
+    /*
     wxLongLong llDownloadProgress =
         currentpage->m_mediactrl->GetDownloadProgress();
     wxLongLong llDownloadTotal =
@@ -1366,9 +1369,10 @@ void wxMediaPlayerTimer::Notify()
             (int) ((llDownloadProgress * 100) / llDownloadTotal).GetValue()
                                       );
     }
+    */
 
     // GetBestSize holds the original video size
-    wxSize videoSize = currentMediaCtrl->GetBestSize();
+    wxSize videoSize = ffmpegView->GetBestSize();
 
     // Now the big part - set the status bar text to
     // hold various metadata about the media
@@ -1381,12 +1385,12 @@ void wxMediaPlayerTimer::Notify()
                     videoSize.y,
                     sPosition,
                     sDuration,
-                    currentMediaCtrl->GetPlaybackRate(),
-                    wxGetMediaStateText(currentpage->m_mediactrl->GetState()),
+                    ffmpegView->GetPlaybackRate(),
+                    wxGetMediaStateText(ffmpegView->GetState()),
                     currentpage->m_nLoops,
-                    (int)llDownloadProgress.GetValue(),
-                    (int)llDownloadTotal.GetValue(),
-                    (int)(currentpage->m_mediactrl->GetVolume() * 100)));
+                    (int)ffmpegView->GetValue(),
+                    (int)ffmpegView->GetValue(),
+                    (int)(ffmpegView->GetVolume() * 100)));
 #endif // wxUSE_STATUSBAR
 }
 
@@ -1432,23 +1436,23 @@ wxMediaPlayerNotebookPage::wxMediaPlayerNotebookPage(wxMediaPlayerFrame* parentF
     //
     //  Create our media control
     //
-    m_mediactrl = new wzMediaCtrl();
-
-    //  Make sure creation was successful
-    bool bOK = m_mediactrl->Create(this, wxID_MEDIACTRL, wxEmptyString,
-                                   wxDefaultPosition, wxSize(640,480),
-                                   wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxEXPAND|wxBORDER_SUNKEN,
-                                   //wxST_NO_AUTORESIZE,
-                                   szBackend);
-    m_mediactrl->SetBackgroundColour(*wxGREEN);
+    //m_mediactrl = new wzMediaCtrl();    
+    // //  Make sure creation was successful
+    // bool bOK = m_mediactrl->Create(this, wxID_MEDIACTRL, wxEmptyString,
+    //                                wxDefaultPosition, wxSize(640,480),
+    //                                wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxEXPAND|wxBORDER_SUNKEN,
+    //                                //wxST_NO_AUTORESIZE,
+    //                                szBackend);
+//    m_mediactrl->SetBackgroundColour(*wxGREEN);
+    m_ffmpegView = new wxFFmpegView(this, wxID_MEDIACTRL, wxDefaultPosition, wxSize(640, 480), wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxEXPAND);
 // you could change the cursor here like
 //    m_mediactrl->SetCursor(wxCURSOR_BLANK);
 // note that this may not affect it if SetPlayerControls
 // is set to something else than wxMEDIACTRLPLAYERCONTROLS_NONE
-    wxASSERT_MSG(bOK, "Could not create media control!");
-    wxUnusedVar(bOK);
+    // wxASSERT_MSG(bOK, "Could not create media control!");
+    // wxUnusedVar(bOK);
 
-    sizer->Add(m_mediactrl, wxSizerFlags().Expand().Border());
+    sizer->Add(m_ffmpegView, wxSizerFlags().Expand().Border());
 
     //
     //  Create the playlist/listctrl
@@ -1460,7 +1464,7 @@ wxMediaPlayerNotebookPage::wxMediaPlayerNotebookPage(wxMediaPlayerFrame* parentF
                     | wxSUNKEN_BORDER);
 
     //  Set the background of our listctrl to white
-    m_playlist->SetBackgroundColour(*wxWHITE);
+    m_playlist->SetBackgroundColour(*wxRED);
 
     //  The layout of the headers of the listctrl are like
     //  |   | File               |  Length
@@ -1637,7 +1641,7 @@ void wxMediaPlayerNotebookPage::OnBeginSeek(wxScrollEvent& WXUNUSED(event))
 // ----------------------------------------------------------------------------
 void wxMediaPlayerNotebookPage::OnEndSeek(wxScrollEvent& WXUNUSED(event))
 {
-    if( m_mediactrl->Seek(
+    if( m_ffmpegView->Seek(
             m_slider->GetValue() * 1000
                                    ) == wxInvalidOffset )
         wxMessageBox("Couldn't seek in movie!");
@@ -1662,11 +1666,10 @@ bool wxMediaPlayerNotebookPage::IsBeingDragged()
 // ----------------------------------------------------------------------------
 void wxMediaPlayerNotebookPage::OnVolChange(wxScrollEvent& WXUNUSED(event))
 {
-    if( m_mediactrl->SetVolume(
+    if( m_ffmpegView->SetVolume(
             m_volSlider->GetValue() / 100.0
                                    ) == false )
         wxMessageBox("Couldn't set volume!");
-
 }
 
 // ----------------------------------------------------------------------------
@@ -1676,7 +1679,7 @@ void wxMediaPlayerNotebookPage::OnVolChange(wxScrollEvent& WXUNUSED(event))
 // ----------------------------------------------------------------------------
 void wxMediaPlayerNotebookPage::OnPBChange(wxScrollEvent& WXUNUSED(event))
 {
-    if( m_mediactrl->SetPlaybackRate(
+    if( m_ffmpegView->SetPlaybackRate(
             m_pbSlider->GetValue() * .25
                                    ) == false )
         wxMessageBox("Couldn't set playbackrate!");
@@ -1723,7 +1726,7 @@ void wxMediaPlayerNotebookPage::OnMediaFinished(wxMediaEvent& WXUNUSED(event))
 {
     if(m_bLoop)
     {
-        if ( !m_mediactrl->Play() )
+        if ( !m_ffmpegView->Play() )
         {
             wxMessageBox("Couldn't loop movie!");
             m_playlist->SetItem(m_nLastFileId, 0, "E");

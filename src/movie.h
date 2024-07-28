@@ -13,27 +13,27 @@ public:
     Movie();
     ~Movie();
 
-    int open(std::string filename);
-    void close();
-    void play();
-    void pause();
-    void stop();
-    bool isOpen() const;
-    bool isPlaying() const;
-    bool isStopped() const;
-    bool isPaused() const;
-    bool isFinished() const;
-    int getPosition() const;
-    int getDuration() const;
+    int Open(std::string filename);
+    void Close();
+    void Play();
+    void Pause();
+    void Stop();
+    bool IsOpened() const;
+    bool IsPlaying() const;
+    bool IsStopped() const;
+    bool IsPaused() const;
+    bool IsFinished() const;
+    int GetPosition() const;
+    int GetDuration() const;
 
-    bool setVolume(double volume);
-    double getVolume() const;
+    bool SetVolume(double volume);
+    double GetVolume() const;
 
-    void setPosition(int position);    
-    bool seek(int64_t timestamp);
+    void SetPosition(int position);    
+    bool Seek(int64_t timestamp);
 
-    bool setPlaybackRate(double rate);
-    double getPlaybackRate() const;    
+    bool SetPlaybackRate(double rate);
+    double GetPlaybackRate() const;    
     
     std::pair<AVFrame *, int64_t> currentFrame();
 

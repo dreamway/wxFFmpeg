@@ -6,9 +6,12 @@
 #include <wx/wx.h>
 #endif
 #include <wx/glcanvas.h>
+#include <wx/uri.h>
+#include <wx/window.h>
 
 #include "glmanager.h"
 #include "movie.h"
+#include "wx/mediactrl.h"
 #include <atomic>
 
 class wxFFmpegInnerView : public wxGLCanvas {
@@ -35,33 +38,35 @@ public:
 
     ~wxFFmpegInnerView();
 
-    void open(std::string filename);
-    void start();
-    void close();
+    void Open(std::string filename);
+    bool Load(wxURI path);
+    void Start();
+    void Close();
 
-    void play();
-    void pause();
-    void stop();
-    void seek(int pos);
-    bool isPlaying();
-    bool isPaused();
-    bool isStopped();
-    bool isOpen();
-    int getPosition();
-    int getDuration();
-    wxSize getSize();
-    void setSize(int width, int height);
-    void setSize(wxSize size);
-    bool isFullScreen();
-    void setFullScreen(bool enable = true);
-    bool setVolume(double volume);
-    double getVolume();
-    void setPosition(int pos);
-    bool getState(int& state);
-    double getPlaybackRate();
-    bool setPlaybackRate(double rate);
-    float getFPS();    
-    void setFPS(float fps);
+    bool Play();
+    bool Pause();
+    bool Stop();
+    void Seek(int pos);
+    bool IsPlaying();
+    bool IsPaused();
+    bool IsStopped();
+    bool IsOpened();
+    int GetPosition();
+    int GetDuration();
+    wxSize GetSize();
+    void SetSize(int width, int height);
+    void SetSize(wxSize size);
+    bool IsFullScreen();
+    void SetFullScreen(bool enable = true);
+    bool SetVolume(double volume);
+    double GetVolume();
+    void SetPosition(int pos);
+    bool GetState(int& state);
+    wxMediaState GetState();
+    double GetPlaybackRate();
+    bool SetPlaybackRate(double rate);
+    float GetFPS();    
+    void SetFPS(float fps);
     
     void OnSize(wxSizeEvent &event);
 
@@ -126,6 +131,7 @@ wxFFmpegInnerView::wxFFmpegInnerView(wxWindow *parent,
     renderTimer_.Bind(wxEVT_TIMER, &wxFFmpegInnerView::OnRenderTimer, this);
     movie_ = new Movie;
     fps_ = 1000.0/24; //defaultFPS
+    SetBackgroundColour(*wxBLUE);
 }
 #endif
 
@@ -135,7 +141,7 @@ wxFFmpegInnerView::~wxFFmpegInnerView() {
     }
 
     if (movie_) {
-        movie_->close();
+        movie_->Close();
         delete movie_;
     }
 
@@ -148,17 +154,22 @@ wxFFmpegInnerView::~wxFFmpegInnerView() {
     }
 }
 
-void wxFFmpegInnerView::open(std::string filename) {
-    movie_->open(std::move(filename));
+void wxFFmpegInnerView::Open(std::string filename) {
+    movie_->Open(std::move(filename));
     pts_ = std::numeric_limits<int64_t>::min();
     renderTimer_.Start(fps_);
 }
 
-void wxFFmpegInnerView::start() {
+bool wxFFmpegInnerView::Load(wxURI path) {
+    Open(std::string(path.BuildURI().c_str()));
+    return true;
 }
 
-void wxFFmpegInnerView::close() {
-    movie_->close();
+void wxFFmpegInnerView::Start() {
+}
+
+void wxFFmpegInnerView::Close() {
+    movie_->Close();
 }
 
 void wxFFmpegInnerView::OnPaint(wxPaintEvent &event) {
@@ -196,6 +207,12 @@ void wxFFmpegInnerView::OnSize(wxSizeEvent &event) {
     glManager_->setViewport(0, 0, size.x, size.y);
 
     std::cout<<"wxFFMpegInnerView::OnSize: "<<size.x<<" "<<size.y<<","<<"contentScaleFactor:"<<GetContentScaleFactor()<<std::endl;    
+    int width, height;    
+    GetClientSize(&width, &height);    
+    std::cout<<"wxFFMpegInnerView::OnSize, innerViewSize: "<<width<<"x"<<height<<std::endl;
+    SetClientSize(event.GetSize());
+    GetClientSize(&width, &height);    
+    std::cout<<"wxFFMpegInnerView::OnSize, update after SetSize: "<<width<<"x"<<height<<std::endl;
 }
 
 void wxFFmpegInnerView::OnRenderTimer(wxTimerEvent &event) {
@@ -204,11 +221,12 @@ void wxFFmpegInnerView::OnRenderTimer(wxTimerEvent &event) {
     if (frame && pts_ != pts) {
         pts_ = pts;
         SetCurrent(*glContext_);
-        glManager_->clear();
+        glManager_->clear();        
         glManager_->draw(frame->width,
                          frame->height,
                          frame->data,
                          frame->linesize);
+
         SwapBuffers();
     } else {
         glManager_->clear();
@@ -216,102 +234,98 @@ void wxFFmpegInnerView::OnRenderTimer(wxTimerEvent &event) {
     }
 }
 
-void wxFFmpegInnerView::play() {
-    if (movie_->isPlaying()) {
-        return;
+bool wxFFmpegInnerView::Play() {
+    if (movie_->IsPlaying()) {
+        return false;
     }
-    movie_->play();
+    movie_->Play();
     renderTimer_.Start(fps_);
+    return true;
 }
 
-void wxFFmpegInnerView::pause() {
+bool wxFFmpegInnerView::Pause() {
     //TODO: how to pause the decoding & rendering
+    return false;
 }
 
-void wxFFmpegInnerView::stop() {
-    if (movie_->isStopped()) {
-        return;
+bool wxFFmpegInnerView::Stop() {
+    if (movie_->IsStopped()) {
+        return false;
     }
-    movie_->stop();
+    movie_->Stop();
     renderTimer_.Stop();
+    return true;
 }
 
-void wxFFmpegInnerView::seek(int pos) {
-    movie_->seek(pos);
+void wxFFmpegInnerView::Seek(int pos) {
+    movie_->Seek(pos);
 }
-bool wxFFmpegInnerView::isPlaying() {
-    return movie_->isPlaying();
+bool wxFFmpegInnerView::IsPlaying() {
+    return movie_->IsPlaying();
 }
-bool wxFFmpegInnerView::isPaused() {
-    return movie_->isPaused();
+bool wxFFmpegInnerView::IsPaused() {
+    return movie_->IsPaused();
 }
-bool wxFFmpegInnerView::isStopped() {
-    return movie_->isStopped();
+bool wxFFmpegInnerView::IsStopped() {
+    return movie_->IsStopped();
 }
-bool wxFFmpegInnerView::isOpen() {
-    return movie_->isOpen();
+bool wxFFmpegInnerView::IsOpened() {
+    return movie_->IsOpened();
 }
-int wxFFmpegInnerView::getPosition() {
-    return movie_->getPosition();
+int wxFFmpegInnerView::GetPosition() {
+    return movie_->GetPosition();
 }
-int wxFFmpegInnerView::getDuration() {
-    return movie_->getDuration();
-}
-
-wxSize wxFFmpegInnerView::getSize() {
-    return this->GetSize();
+int wxFFmpegInnerView::GetDuration() {
+    return movie_->GetDuration();
 }
 
-void wxFFmpegInnerView::setSize(int width, int height) {
-    this->SetSize(width, height);
-}
 
-void wxFFmpegInnerView::setSize(wxSize size) {
-    this->SetSize(size);
-}
-bool wxFFmpegInnerView::isFullScreen() {
+bool wxFFmpegInnerView::IsFullScreen() {
     //TODO:
     return false;
 }
 
-void wxFFmpegInnerView::setFullScreen(bool enable) {
+void wxFFmpegInnerView::SetFullScreen(bool enable) {
     //TODO: set full screen
 }
 
-bool wxFFmpegInnerView::setVolume(double volume) {
-    return movie_->setVolume(volume);
+bool wxFFmpegInnerView::SetVolume(double volume) {
+    return movie_->SetVolume(volume);
 }
 
-double wxFFmpegInnerView::getVolume() {
-    return movie_->getVolume();
+double wxFFmpegInnerView::GetVolume() {
+    return movie_->GetVolume();
 }
 
-void wxFFmpegInnerView::setPosition(int pos) {
-    movie_->setPosition(pos);
+void wxFFmpegInnerView::SetPosition(int pos) {
+    movie_->SetPosition(pos);
 }
 
-double wxFFmpegInnerView::getPlaybackRate() {
+double wxFFmpegInnerView::GetPlaybackRate() {
     //TODO
     return 1.0;
 }
 
-bool wxFFmpegInnerView::setPlaybackRate(double rate) {
-    return movie_->setPlaybackRate(rate);
+bool wxFFmpegInnerView::SetPlaybackRate(double rate) {
+    return movie_->SetPlaybackRate(rate);
 }
 
-float wxFFmpegInnerView::getFPS() {
+float wxFFmpegInnerView::GetFPS() {
     return fps_;
 }
 
-void wxFFmpegInnerView::setFPS(float fps) {
+void wxFFmpegInnerView::SetFPS(float fps) {
     fps_ = fps;
 }
 
-bool wxFFmpegInnerView::getState(int& state) {
+bool wxFFmpegInnerView::GetState(int& state) {
     //TODO
     return 0;
 }
 
+wxMediaState wxFFmpegInnerView::GetState() {
+    return wxMEDIASTATE_PLAYING;
+}
 
 
 //wxFFmpegView
@@ -339,115 +353,130 @@ wxFFmpegView::wxFFmpegView(wxWindow *parent,
             WX_GL_DOUBLEBUFFER,
             0,
     };
-    innerView_ = new wxFFmpegInnerView(this, wxID_ANY, attribList);
+    innerView_ = new wxFFmpegInnerView(this, wxID_ANY, attribList, pos, size, style, name);
 #endif
 
     wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
     sizer->Add(innerView_, 1, wxEXPAND);
     SetSizer(sizer);
+    SetBackgroundColour(*wxGREEN);
 }
 
 wxFFmpegView::~wxFFmpegView() {
 }
 
-void wxFFmpegView::open(std::string filename) {
-    innerView_->open(std::move(filename));
+void wxFFmpegView::Open(std::string filename) {
+    innerView_->Open(std::move(filename));
 }
 
-void wxFFmpegView::close() {
-    innerView_->close();
+bool wxFFmpegView::Load(wxURI path) {
+    return innerView_->Load(std::move(path));
 }
 
-void wxFFmpegView::play() {
-    innerView_->play();
+void wxFFmpegView::Close() {
+    innerView_->Close();
 }
 
-void wxFFmpegView::pause() {
-    innerView_->pause();
+bool wxFFmpegView::Play() {
+    return innerView_->Play();
 }
 
-void wxFFmpegView::stop() {
-    innerView_->stop();
-}
-void wxFFmpegView::seek(int pos) {
-    innerView_->seek(pos);
+bool wxFFmpegView::Pause() {
+    return innerView_->Pause();
 }
 
-bool wxFFmpegView::isPlaying() {
-    return innerView_->isPlaying();
+bool wxFFmpegView::Stop() {
+    return innerView_->Stop();
+}
+int wxFFmpegView::Seek(int pos) {
+    innerView_->Seek(pos);
+    return pos;
 }
 
-bool wxFFmpegView::isPaused() {
-    return innerView_->isPaused();
+bool wxFFmpegView::IsPlaying() {
+    return innerView_->IsPlaying();
 }
 
-bool wxFFmpegView::isStopped() {
-    return innerView_->isStopped();
+bool wxFFmpegView::IsPaused() {
+    return innerView_->IsPaused();
 }
 
-bool wxFFmpegView::isOpen() {
-    return innerView_->isOpen();
+bool wxFFmpegView::IsStopped() {
+    return innerView_->IsStopped();
 }
 
-int wxFFmpegView::getPosition() {
-    return innerView_->getPosition();
+bool wxFFmpegView::IsOpened() {
+    return innerView_->IsOpened();
 }
 
-int wxFFmpegView::getDuration() {
-    return innerView_->getDuration();
+int wxFFmpegView::GetPosition() {
+    return innerView_->GetPosition();
 }
 
-wxSize wxFFmpegView::getSize() {
-    return innerView_->getSize();
+int wxFFmpegView::GetDuration() {
+    return innerView_->GetDuration();
 }
 
-void wxFFmpegView::setSize(int width, int height) {
-    innerView_->setSize(wxSize{width, height});
+
+bool wxFFmpegView::IsFullScreen() {
+    return innerView_->IsFullScreen();
 }
 
-void wxFFmpegView::setSize(wxSize size) {
-    innerView_->setSize(size);
+void wxFFmpegView::SetFullScreen(bool enable) {
+    innerView_->SetFullScreen(enable);
 }
 
-bool wxFFmpegView::isFullScreen() {
-    return innerView_->isFullScreen();
+bool wxFFmpegView::SetVolume(double volume) {
+    return innerView_->SetVolume(volume);
 }
 
-void wxFFmpegView::setFullScreen(bool enable) {
-    innerView_->setFullScreen(enable);
+double wxFFmpegView::GetVolume() {
+    return innerView_->GetVolume();
 }
 
-bool wxFFmpegView::setVolume(double volume) {
-    return innerView_->setVolume(volume);
+void wxFFmpegView::SetPosition(int pos) {
+    innerView_->SetPosition(pos);
 }
 
-double wxFFmpegView::getVolume() {
-    return innerView_->getVolume();
+bool wxFFmpegView::GetState(int& state) {
+    return innerView_->GetState(state);
 }
 
-void wxFFmpegView::setPosition(int pos) {
-    innerView_->setPosition(pos);
+double wxFFmpegView::GetPlaybackRate() {
+    return innerView_->GetPlaybackRate();
 }
 
-bool wxFFmpegView::getState(int& state) {
-    return innerView_->getState(state);
+bool wxFFmpegView::SetPlaybackRate(double rate) {
+    return innerView_->SetPlaybackRate(rate);
 }
 
-double wxFFmpegView::getPlaybackRate() {
-    return innerView_->getPlaybackRate();
-}
-
-bool wxFFmpegView::setPlaybackRate(double rate) {
-    return innerView_->setPlaybackRate(rate);
-}
-
-void wxFFmpegView::setFPS(float fps) {
-    innerView_->setFPS(fps);
+void wxFFmpegView::SetFPS(float fps) {
+    innerView_->SetFPS(fps);
 }
 
 
 void wxFFmpegView::OnSize(wxSizeEvent& event) {
-    wxSize size = event.GetSize();
-    setSize(size);
+    // wxSize size = event.GetSize();
+    // SetSize(size);
     innerView_->OnSize(event);
 }
+
+wxMediaState wxFFmpegView::GetState() {
+    return wxMEDIASTATE_PLAYING;
+}
+
+wxLongLong wxFFmpegView::Length() {
+    //TODO
+    return 10L;
+}
+
+wxLongLong wxFFmpegView::Tell() {
+    //TODO
+    return 10L;
+}
+
+int wxFFmpegView::GetValue() {
+    //TODO
+    return 1;
+}
+                   

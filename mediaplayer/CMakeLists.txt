@@ -19,7 +19,7 @@ message(${wxWidgets_LIBRARIES})
 
 include_directories(${wxWidgets_INCLUDE_DIRS})
 
-add_executable(mediaplayer mediaplayer.cpp OGLMediaBackend.cpp wzMediaCtrl.cpp)
+add_executable(mediaplayer mediaplayer.cpp)
 
 target_link_libraries(mediaplayer PRIVATE
     ${wxWidgets_LIBRARIES}

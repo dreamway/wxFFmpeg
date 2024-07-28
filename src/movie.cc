@@ -15,7 +15,7 @@ Movie::~Movie() {
     }
 }
 
-int Movie::open(std::string filename) {
+int Movie::Open(std::string filename) {
     if (parseThread_.joinable()) {
         return -1;
     }
@@ -25,7 +25,7 @@ int Movie::open(std::string filename) {
     return 0;
 }
 
-void Movie::close() {
+void Movie::Close() {
     quit_ = true;
     video_.pictQCond_.notify_one();
     if (parseThread_.joinable()) {
@@ -178,77 +178,84 @@ nanoseconds Movie::getClock() {
     return nanoseconds::min();
 }
 
-void Movie::play() {
+void Movie::Play() {
+    if(IsPlaying()) {
+        return;
+    }
+    if(IsStopped()) {
+        start();
+    }
+}
+    
+void Movie::Pause() {
+    if(IsPlaying()) {
+        //TODO
+    }
+}
+
+bool Movie::IsPlaying() const {
+
+}
+
+void Movie::Stop() {
 
 }
     
-void Movie::pause() {
-
-}
-
-bool Movie::isPlaying() const {
-
-}
-
-void Movie::stop() {
-
-}
-    
-bool Movie::isStopped() const {
+bool Movie::IsStopped() const {
     //TODO
     return false;
 }
 
-bool Movie::isPaused() const {
+bool Movie::IsPaused() const {
     //TODO
     return false;
 }
 
-bool Movie::isFinished() const {
+bool Movie::IsFinished() const {
     //TODO
     return false;
 }
 
-bool Movie::isOpen() const {
+bool Movie::IsOpened() const {
     return fmtctx_ != nullptr;
 }
 
-int Movie::getPosition() const {
+int Movie::GetPosition() const {
     //TODO
     return 0;
 }
 
-bool Movie::seek(int64_t timestamp) {
+bool Movie::Seek(int64_t timestamp) {
     //TODO
     return false;
 }
 
-int Movie::getDuration() const {
+int Movie::GetDuration() const {
     //TODO
     return 0;
 }
 
 
-bool Movie::setVolume(double volume) {
+bool Movie::SetVolume(double volume) {
     //TODO
     return false;
 }
     
-void Movie::setPosition(int position) {
+void Movie::SetPosition(int position) {
 //TODO
 }
     
-double Movie::getVolume() const {
+double Movie::GetVolume() const {
     //TODO  
     return .0f;
 }
 
-bool Movie::setPlaybackRate(double rate) {
+bool Movie::SetPlaybackRate(double rate) {
     //TODO
     return false;
 }
 
-double Movie::getPlaybackRate() const {
+double Movie::GetPlaybackRate() const {
     //TODO
     return 1.0f;
 }
