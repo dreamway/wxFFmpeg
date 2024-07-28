@@ -43,6 +43,7 @@ public:
     int GetValue();
 
     void OnSize(wxSizeEvent& event);
+    void OnPaint(wxPaintEvent &event);
 private:
     wxFFmpegInnerView *innerView_;
 

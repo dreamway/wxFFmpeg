@@ -69,9 +69,9 @@ public:
     void SetFPS(float fps);
     
     void OnSize(wxSizeEvent &event);
-
-private:
     void OnPaint(wxPaintEvent &event);    
+
+private:    
     void OnRenderTimer(wxTimerEvent &event);
 
     wxGLContext *glContext_;
@@ -87,7 +87,7 @@ private:
 // clang-format off
 wxBEGIN_EVENT_TABLE(wxFFmpegInnerView, wxGLCanvas)
     EVT_PAINT(wxFFmpegInnerView::OnPaint)
-    EVT_SIZE(wxFFmpegInnerView::OnSize)
+    EVT_SIZE(wxFFmpegInnerView::OnSize)    
 wxEND_EVENT_TABLE();
 // clang-format on
 
@@ -178,6 +178,8 @@ void wxFFmpegInnerView::OnPaint(wxPaintEvent &event) {
     if (!glManager_ || !glManager_->ok()) {
         return;
     }
+
+    std::cout<<"wxFFmpegInnerView::OnPaint, GetClientSize:"<<GetClientSize().GetWidth()<<"x"<<GetClientSize().GetHeight()<<std::endl;
 }
 
 void wxFFmpegInnerView::OnSize(wxSizeEvent &event) {
@@ -204,15 +206,13 @@ void wxFFmpegInnerView::OnSize(wxSizeEvent &event) {
     }
 
     wxSize size = event.GetSize() * GetContentScaleFactor();    
+    SetClientSize(size);
     glManager_->setViewport(0, 0, size.x, size.y);
-
-    std::cout<<"wxFFMpegInnerView::OnSize: "<<size.x<<" "<<size.y<<","<<"contentScaleFactor:"<<GetContentScaleFactor()<<std::endl;    
-    int width, height;    
-    GetClientSize(&width, &height);    
-    std::cout<<"wxFFMpegInnerView::OnSize, innerViewSize: "<<width<<"x"<<height<<std::endl;
-    SetClientSize(event.GetSize());
-    GetClientSize(&width, &height);    
-    std::cout<<"wxFFMpegInnerView::OnSize, update after SetSize: "<<width<<"x"<<height<<std::endl;
+    //For Rendering at initial state
+    if(!movie_->IsPlaying()) {                
+        glManager_->clear();
+        SwapBuffers();
+    }
 }
 
 void wxFFmpegInnerView::OnRenderTimer(wxTimerEvent &event) {
@@ -221,7 +221,7 @@ void wxFFmpegInnerView::OnRenderTimer(wxTimerEvent &event) {
     if (frame && pts_ != pts) {
         pts_ = pts;
         SetCurrent(*glContext_);
-        glManager_->clear();        
+        glManager_->clear();
         glManager_->draw(frame->width,
                          frame->height,
                          frame->data,
@@ -331,6 +331,7 @@ wxMediaState wxFFmpegInnerView::GetState() {
 //wxFFmpegView
 wxBEGIN_EVENT_TABLE(wxFFmpegView, wxPanel)
     EVT_SIZE(wxFFmpegView::OnSize)
+    EVT_PAINT(wxFFmpegView::OnPaint)
 wxEND_EVENT_TABLE()
 wxFFmpegView::wxFFmpegView(wxWindow *parent,
                            wxWindowID winid,
@@ -459,6 +460,12 @@ void wxFFmpegView::OnSize(wxSizeEvent& event) {
     // wxSize size = event.GetSize();
     // SetSize(size);
     innerView_->OnSize(event);
+    std::cout<<"wxFFmpegView::OnSize, GetClientSize:"<<GetClientSize().GetWidth()<<"x"<<GetClientSize().GetHeight()<<std::endl;
+}
+
+void wxFFmpegView::OnPaint(wxPaintEvent &event) {
+    innerView_->OnPaint(event);
+    std::cout<<"wxFFmpegView::OnPaint, GetClientSize:"<<GetClientSize().GetWidth()<<"x"<<GetClientSize().GetHeight()<<std::endl;
 }
 
 wxMediaState wxFFmpegView::GetState() {

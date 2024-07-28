@@ -21,6 +21,7 @@ int Movie::Open(std::string filename) {
     }
     filename_ = std::move(filename);
     parseThread_ = std::thread(&Movie::start, this);
+    isPlaying_ = true;
 
     return 0;
 }
@@ -31,6 +32,8 @@ void Movie::Close() {
     if (parseThread_.joinable()) {
         parseThread_.join();
     }
+
+    isPlaying_ = false;
 }
 
 std::pair<AVFrame *, int64_t> Movie::currentFrame() {
@@ -194,7 +197,7 @@ void Movie::Pause() {
 }
 
 bool Movie::IsPlaying() const {
-
+    return isPlaying_;
 }
 
 void Movie::Stop() {
