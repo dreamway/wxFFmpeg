@@ -2,6 +2,10 @@
 #include <iostream>
 #include "OGLMediaBackend.h"
 
+
+// wxBEGIN_EVENT_TABLE(wzMediaCtrl, wxControl)
+//     EVT_SIZE(wzMediaCtrl::OnSize)
+// wxEND_EVENT_TABLE()
 //---------------------------------------------------------------------------
 // wxMediaCtrl::Create (file version)
 // wxMediaCtrl::Create (URL version)
@@ -24,21 +28,20 @@ bool wzMediaCtrl::Create(wxWindow* parent, wxWindowID id,
                 const wxValidator& validator,
                 const wxString& name)
 {
-    if(!DoCreate(parent, id,
-                                pos, size, style, validator, name))
+    if(!DoCreate(parent, id,pos, size, style, validator, name))
     {
         m_imp = nullptr;
         return false;
     }
 
-    if (!fileName.empty())
-    {
-        if (!Load(fileName))
-        {
-            wxDELETE(m_imp);
-            return false;
-        }
-    }
+    // if (!fileName.empty())
+    // {
+    //     if (!Load(fileName))
+    //     {
+    //         wxDELETE(m_imp);
+    //         return false;
+    //     }
+    // }
 
     SetInitialSize(size);
     return true;    
@@ -59,11 +62,11 @@ bool wzMediaCtrl::Create(wxWindow* parent, wxWindowID id,
         return false;
     }
 
-    if (!Load(location))
-    {
-        wxDELETE(m_imp);
-        return false;
-    }
+    // if (!Load(location))
+    // {
+    //     wxDELETE(m_imp);
+    //     return false;
+    // }
 
     SetInitialSize(size);
     return true;    
@@ -86,6 +89,7 @@ bool wzMediaCtrl::DoCreate(wxWindow* parent, wxWindowID id,
     if( m_imp->CreateControl(this, parent, id, pos, size,
                              style, validator, name) )
     {
+        Bind(wxEVT_SIZE, &wzMediaCtrl::OnSize, this);
         return true;
     }
 
@@ -287,4 +291,15 @@ void wzMediaCtrl::DoMoveWindow(int x, int y, int w, int h)
 
     if(m_imp)
         m_imp->Move(x, y, w, h);
+}
+
+
+void wzMediaCtrl::OnSize(wxSizeEvent& event)
+{
+    std::cout << "wzMediaCtrl::OnSize, event.Size.GetWidth:"<<event.GetSize().GetWidth()<<", height:"<<event.GetSize().GetHeight() << std::endl;
+//    wxControl::OnSize(event);
+    //m_imp->Move(0, 0, event.GetSize().GetWidth(), event.GetSize().GetHeight());
+    SetSize(event.GetSize());
+    if(m_imp)
+        m_imp->OnSize(event);
 }

@@ -2,6 +2,7 @@
 
 #include <GL/glew.h>
 #include <vector>
+#include <iostream>
 
 const char *vertexSource = R"(
 #version 330 core
@@ -112,6 +113,7 @@ void GLManager::clear() {
 }
 
 void GLManager::setViewport(int x, int y, int width, int height) {
+    std::cout<<"GLManager::setViewport x:"<<x<<" y:"<<y<<" width:"<<width<<" height:"<<height<<std::endl;
     viewWidth = width;
     viewHeight = height;
     glViewport(x, y, viewWidth, viewHeight);
@@ -127,10 +129,12 @@ void GLManager::draw(int width, int height, uint8_t **data, int *linesize) {
         texHeight = height;
         changed = true;
     }
+    std::cout<<"GLManager::draw frameWidth:"<<width<<"x"<<height<<", textureSize:"<<texWidth<<"x"<<texHeight<<std::endl;
 
     float tr = (float)texWidth / texHeight;
     float vr = (float)viewWidth / viewHeight;
     float r = tr / vr;
+
     if (r != ratio) {
         ratio = r;
         std::vector<float> vertices;

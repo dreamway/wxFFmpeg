@@ -38,6 +38,9 @@ public:
     bool setPlaybackRate(double rate);
     void setFPS(float fps);
 
+    void OnSize(wxSizeEvent& event);
 private:
     wxFFmpegInnerView *innerView_;
+
+    wxDECLARE_EVENT_TABLE();
 };

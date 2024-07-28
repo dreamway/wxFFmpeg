@@ -63,9 +63,10 @@ public:
     float getFPS();    
     void setFPS(float fps);
     
-private:
-    void OnPaint(wxPaintEvent &event);
     void OnSize(wxSizeEvent &event);
+
+private:
+    void OnPaint(wxPaintEvent &event);    
     void OnRenderTimer(wxTimerEvent &event);
 
     wxGLContext *glContext_;
@@ -169,13 +170,15 @@ void wxFFmpegInnerView::OnPaint(wxPaintEvent &event) {
 }
 
 void wxFFmpegInnerView::OnSize(wxSizeEvent &event) {
-    event.Skip();
+    //event.Skip();
 
     if (!IsShownOnScreen()) {
+        std::cout<<"skip , Not shown on screen"<<std::endl;
         return;
     }
 
     if (!glContext_) {
+        std::cerr<<"glContent is null"<<std::endl;
         return;
     }
 
@@ -189,19 +192,26 @@ void wxFFmpegInnerView::OnSize(wxSizeEvent &event) {
         return;
     }
 
-    wxSize size = event.GetSize() * GetContentScaleFactor();
+    wxSize size = event.GetSize() * GetContentScaleFactor();    
     glManager_->setViewport(0, 0, size.x, size.y);
+
+    std::cout<<"wxFFMpegInnerView::OnSize: "<<size.x<<" "<<size.y<<","<<"contentScaleFactor:"<<GetContentScaleFactor()<<std::endl;    
 }
 
 void wxFFmpegInnerView::OnRenderTimer(wxTimerEvent &event) {
     auto [frame, pts] = movie_->currentFrame();
+    //std::cout<<"wxFFmpegInnerView::OnRenderTimer: pts:"<<pts<<", currentPts:"<<pts_<<",frame->width:"<<frame->width<<"x"<<frame->height<<std::endl;
     if (frame && pts_ != pts) {
         pts_ = pts;
         SetCurrent(*glContext_);
+        glManager_->clear();
         glManager_->draw(frame->width,
                          frame->height,
                          frame->data,
                          frame->linesize);
+        SwapBuffers();
+    } else {
+        glManager_->clear();
         SwapBuffers();
     }
 }
@@ -305,6 +315,9 @@ bool wxFFmpegInnerView::getState(int& state) {
 
 
 //wxFFmpegView
+wxBEGIN_EVENT_TABLE(wxFFmpegView, wxPanel)
+    EVT_SIZE(wxFFmpegView::OnSize)
+wxEND_EVENT_TABLE()
 wxFFmpegView::wxFFmpegView(wxWindow *parent,
                            wxWindowID winid,
                            const wxPoint &pos,
@@ -430,4 +443,11 @@ bool wxFFmpegView::setPlaybackRate(double rate) {
 
 void wxFFmpegView::setFPS(float fps) {
     innerView_->setFPS(fps);
+}
+
+
+void wxFFmpegView::OnSize(wxSizeEvent& event) {
+    wxSize size = event.GetSize();
+    setSize(size);
+    innerView_->OnSize(event);
 }

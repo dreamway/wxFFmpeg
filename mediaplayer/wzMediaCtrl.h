@@ -98,7 +98,10 @@ protected:
     void OnMediaFinished(wxMediaEvent& evt);
     virtual void DoMoveWindow(int x, int y, int w, int h) override;
     wxSize DoGetBestSize() const override;
+    void OnSize(wxSizeEvent& event);
 
     class OGLMediaBackend *m_imp;
     bool m_bLoaded;
+
+    //wxDECLARE_EVENT_TABLE();
 };

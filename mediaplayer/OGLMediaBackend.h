@@ -58,6 +58,8 @@ public:
         return total;
     }
 
+    void OnSize(wxSizeEvent& evt);    
+
     wxFFmpegView *ffmpegView;    
     wxSize m_bestSize;  // Cached size
 

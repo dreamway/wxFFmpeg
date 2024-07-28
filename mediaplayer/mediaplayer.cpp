@@ -1436,9 +1436,11 @@ wxMediaPlayerNotebookPage::wxMediaPlayerNotebookPage(wxMediaPlayerFrame* parentF
 
     //  Make sure creation was successful
     bool bOK = m_mediactrl->Create(this, wxID_MEDIACTRL, wxEmptyString,
-                                   wxDefaultPosition, wxDefaultSize,
-                                   wxST_NO_AUTORESIZE,
+                                   wxDefaultPosition, wxSize(640,480),
+                                   wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxEXPAND|wxBORDER_SUNKEN,
+                                   //wxST_NO_AUTORESIZE,
                                    szBackend);
+    m_mediactrl->SetBackgroundColour(*wxGREEN);
 // you could change the cursor here like
 //    m_mediactrl->SetCursor(wxCURSOR_BLANK);
 // note that this may not affect it if SetPlayerControls

@@ -1,4 +1,5 @@
 #include "OGLMediaBackend.h"
+#include <iostream>
 
 //---------------------------------------------------------------------------
 // OGLMediaBackend Constructor
@@ -38,6 +39,7 @@ bool OGLMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
                                      const wxValidator& validator,
                                      const wxString& name)
 {
+    std::cout<<"OGLMediaBackend::CreateControl"<<std::endl;
     // Create window
     // By default wxWindow(s) is created with a border -
     // so we need to get rid of those
@@ -46,11 +48,12 @@ bool OGLMediaBackend::CreateControl(wxControl* ctrl, wxWindow* parent,
     // backends, we don't need wxCLIP_CHILDREN
     //
     if ( !ctrl->wxControl::Create(parent, id, pos, size,
-                            (style & ~wxBORDER_MASK) | wxBORDER_NONE,
+                            (style & ~wxBORDER_MASK) | wxBORDER_RAISED,
                             validator, name) )
         return false;
-
-    ffmpegView = new wxFFmpegView(ctrl, wxID_ANY);
+    
+    ffmpegView = new wxFFmpegView(ctrl, wxID_ANY, pos, size, style, name);
+    ffmpegView->SetBackgroundColour(*wxYELLOW);
     OGLMediaBackend::SetVolume(1.0);
     
     // don't erase the background of our control window so that resizing is a
@@ -277,10 +280,18 @@ void OGLMediaBackend::DoGetDownloadProgress(wxLongLong*, wxLongLong*) {
 //---------------------------------------------------------------------------
 void OGLMediaBackend::Move(int WXUNUSED(x), int WXUNUSED(y),
                             int WXUNUSED(w), int WXUNUSED(h))
-{
+{    
 }
 
 bool OGLMediaBackend::ShowPlayerControls(wxMediaCtrlPlayerControls flags)
 {
     return false;
+}
+
+void OGLMediaBackend::OnSize(wxSizeEvent& evt)
+{
+    std::cout<<"OGLMediaBackend::OnSize, event.GetSize() = "<<evt.GetSize().x<<" x "<<evt.GetSize().y<<std::endl;
+    if(ffmpegView) {
+        ffmpegView->OnSize(evt);
+    }
 }
